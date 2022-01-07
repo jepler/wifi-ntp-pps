@@ -1,2 +1,2 @@
-idf_component_register(SRCS "sntp_example_main.c"
+idf_component_register(SRCS "wifi_ntp_pps.c"
                     INCLUDE_DIRS ".")

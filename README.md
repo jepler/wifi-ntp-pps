@@ -14,7 +14,7 @@ esp-idf/install.sh
 
 Set environment variables in current shell until exit:
 ```shell
-$ . esp-idf/export.sh
+. esp-idf/export.sh
 ```
 
 # Configuring wifi-ntp-pps
@@ -39,4 +39,17 @@ Plug in the device while holding the BOOT button. Alternately hold BOOT and pres
 idf.py flash --after no_reset --port=/dev/ttyACM???
 ```
 
-Once flash has finished, click the reset button once.  (Technical limitations seem to prevent automatically resetting after loading the code)
+Once flash has finished, click the reset button once.  (Technical limitations seem to prevent automatically resetting after loading the code, and it prints a scary failure message every time!)
+
+# PPS Output
+
+The pin with silk "A0" gets a 1PPS output with the rising edge placed near the top of the second.
+
+# Status indicator
+
+The on-board neopixel gives the board status:
+
+* Black: power off or crashed
+* Solid red: never connected to wifi or crashed
+* Blinking red: never got NTP sync since power on
+* Blinking green: connected & got NTP sync since power on
