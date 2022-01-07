@@ -20,8 +20,12 @@
 #include "esp_attr.h"
 #include "esp_sleep.h"
 #include "nvs_flash.h"
-#include "protocol_examples_common.h"
 #include "esp_sntp.h"
+#include "led_strip.h"
+#include "driver/rmt.h"
+#include "protocol_examples_common.h"
+
+#define RMT_TX_CHANNEL RMT_CHANNEL_0
 
 static const char *TAG = "example";
 
@@ -32,17 +36,42 @@ void time_sync_notification_cb(struct timeval *tv)
     ever_set = true;
 }
 
+#define RED 1,0,0
+#define GREEN 0,1,0
+#define BLACK 0,0,0
+#define led_set(strip, arg) do { strip->set_pixel(strip, 0, arg); strip->refresh(strip, 100); } while(0)
+// Pin settings for QT Py ESP32-S2
+#define NEOPIXEL_PWR (38)
+#define NEOPIXEL (39) // AKA MTCK
 #define GPIO_PPS (18) // QT Py ESP32-S2 Silk "A0"
 
 void app_main(void)
 {
     {
         gpio_config_t setting = {
-            .pin_bit_mask = (1ull << GPIO_PPS),
+            .pin_bit_mask = (1ull << GPIO_PPS) | (1ull << NEOPIXEL_PWR),
             .mode = GPIO_MODE_OUTPUT,
         };
         gpio_config(&setting);
     }
+
+    gpio_set_level(NEOPIXEL_PWR, true);
+
+    rmt_config_t config = RMT_DEFAULT_CONFIG_TX(NEOPIXEL, RMT_TX_CHANNEL);
+    // set counter clock to 40MHz
+    config.clk_div = 2;
+
+    ESP_ERROR_CHECK(rmt_config(&config));
+    ESP_ERROR_CHECK(rmt_driver_install(config.channel, 0, 0));
+
+    // install ws2812 driver
+    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(1, (led_strip_dev_t)config.channel);
+    led_strip_t *strip = led_strip_new_rmt_ws2812(&strip_config);
+    if (!strip) {
+        ESP_LOGE(TAG, "install WS2812 driver failed");
+    }
+
+    led_set(strip, RED);
 
     ESP_ERROR_CHECK( nvs_flash_init() );
     ESP_ERROR_CHECK(esp_netif_init());
@@ -64,9 +93,19 @@ void app_main(void)
     while(true) {
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        unsigned duty = ever_set ? 100000 : 500000;
+        const unsigned duty = 100000;
         bool state = tv.tv_usec < duty;
         gpio_set_level(GPIO_PPS, state);
+
+        if (state) {
+            if(ever_set) {
+                led_set(strip, GREEN);
+            } else {
+                led_set(strip, RED);
+            }
+        } else {
+            led_set(strip, BLACK);
+        }
 
         unsigned long sleep_us = 1000000 - tv.tv_usec;
         if(tv.tv_usec < duty) {
