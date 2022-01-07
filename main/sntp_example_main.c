@@ -67,7 +67,7 @@ void app_main(void)
         unsigned duty = ever_set ? 100000 : 500000;
         bool state = tv.tv_usec < duty;
         gpio_set_level(GPIO_PPS, state);
-                
+
         unsigned long sleep_us = 1000000 - tv.tv_usec;
         if(tv.tv_usec < duty) {
             sleep_us = duty - tv.tv_usec;
