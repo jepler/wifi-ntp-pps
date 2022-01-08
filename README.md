@@ -23,7 +23,11 @@ Open the project configuration menu (`idf.py menuconfig`):
 
 * Configure Wi-Fi under "Example Connection Configuration" menu. See "Establishing Wi-Fi or Ethernet Connection" section in [examples/protocols/README.md](https://github.com/espressif/esp-idf/blob/HEAD/examples/protocols/README.md) for more details.
 
+* Select the board type (Adafruit QT Py or Adafruit Feather)
+
 * Select an ntp server. Ideally, a local server. Otherwise, `pool.ntp.org` can be used. The default **will not work**.
+
+* Optionally, turn down `LWIP_SNTP_UPDATE_DELAY`; the default is 1 hour. For a local NTP server something smaller like 30000 (30 seconds) is probably fine.
 
 # Compiling
 
@@ -52,4 +56,5 @@ The on-board neopixel gives the board status:
 * Black: power off or crashed
 * Solid red: never connected to wifi or crashed
 * Blinking red: never got NTP sync since power on
+* Blinking green: connected & got NTP sync in last 10s
 * Blinking green: connected & got NTP sync since power on

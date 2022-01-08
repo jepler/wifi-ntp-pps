@@ -30,14 +30,16 @@
 static const char *TAG = "example";
 
 bool ever_set;
-
+struct timeval last_set;
 void time_sync_notification_cb(struct timeval *tv)
 {
     ever_set = true;
+    gettimeofday(&last_set, NULL);
 }
 
 #define RED 1,0,0
 #define GREEN 0,1,0
+#define CYAN 0,1,1
 #define BLACK 0,0,0
 #define led_set(strip, arg) do { strip->set_pixel(strip, 0, arg); strip->refresh(strip, 100); } while(0)
 // Pin settings for QT Py ESP32-S2
@@ -107,7 +109,9 @@ void app_main(void)
         gpio_set_level(GPIO_PPS, state);
 
         if (state) {
-            if(ever_set) {
+            if(last_set.tv_sec < tv.tv_sec && last_set.tv_sec > tv.tv_sec - 10) {
+                led_set(strip, CYAN);
+            } else if(ever_set) {
                 led_set(strip, GREEN);
             } else {
                 led_set(strip, RED);
