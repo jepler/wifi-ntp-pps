@@ -37,6 +37,10 @@ void time_sync_notification_cb(struct timeval *tv)
     gettimeofday(&last_set, NULL);
 }
 
+// Measure the delay from GPS PPS to this thing's PPS. A
+// *POSITIVE* offset means that this thing is LATE.
+#define PPS_OFFSET_MS 14
+#define US_IN_S (1000000)
 #define RED 1,0,0
 #define GREEN 0,1,0
 #define CYAN 0,1,1
@@ -104,7 +108,18 @@ void app_main(void)
     while(true) {
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        const unsigned duty = 100000;
+
+        // apply the OFFSET
+        tv.tv_usec += PPS_OFFSET_MS * 1000;
+        if(tv.tv_usec < 0) {
+            tv.tv_sec -= 1;
+            tv.tv_usec += US_IN_S;
+        } else if(tv.tv_usec > US_IN_S) {
+            tv.tv_sec += 1;
+            tv.tv_usec -= US_IN_S;
+        }
+
+        const unsigned duty = US_IN_S/10;
         bool state = tv.tv_usec < duty;
         gpio_set_level(GPIO_PPS, state);
 
