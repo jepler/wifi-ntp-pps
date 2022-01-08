@@ -41,9 +41,18 @@ void time_sync_notification_cb(struct timeval *tv)
 #define BLACK 0,0,0
 #define led_set(strip, arg) do { strip->set_pixel(strip, 0, arg); strip->refresh(strip, 100); } while(0)
 // Pin settings for QT Py ESP32-S2
+
+#if CONFIG_SNTP_BOARD_TYPE_QTPY
 #define NEOPIXEL_PWR (38)
 #define NEOPIXEL (39) // AKA MTCK
-#define GPIO_PPS (18) // QT Py ESP32-S2 Silk "A0"
+#define GPIO_PPS (18) // Silk "A0"
+#elif CONFIG_SNTP_BOARD_TYPE_FEATHER
+#define NEOPIXEL_PWR (21)
+#define NEOPIXEL (33)
+#define GPIO_PPS (18) // Silk "A0"
+#else
+#error Unknown board type
+#endif
 
 void app_main(void)
 {

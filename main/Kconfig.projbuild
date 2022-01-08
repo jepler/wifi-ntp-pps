@@ -1,5 +1,18 @@
 menu "Example Configuration"
     
+    choice SNTP_BOARD_TYPE
+        prompt "Board type"
+        default SNTP_BOARD_TYPE_FEATHER
+        help
+            Board type
+
+        config SNTP_BOARD_TYPE_QTPY
+            bool "Adafruit QT Py ESP32-S2 (pps on A0)"
+
+        config SNTP_BOARD_TYPE_FEATHER
+            bool "Adafruit Feather ESP32-S2 (pps on A0)"
+    endchoice
+
     config SNTP_SERVER_NAME
         string "Hostname of NTP server"
         default "127.0.0.2"
