@@ -52,19 +52,30 @@ void time_sync_notification_cb(struct timeval *tv)
 #define NEOPIXEL_PWR (38)
 #define NEOPIXEL (39) // AKA MTCK
 #define GPIO_PPS (18) // Silk "A0"
+#define GPIO_PPM (17) // Silk "A1"
+#define GPIO_PPH (9) // Silk "A2"
+#define GPIO_PPX (8) // Silk "A3"
 #elif CONFIG_SNTP_BOARD_TYPE_FEATHER
 #define NEOPIXEL_PWR (21)
 #define NEOPIXEL (33)
 #define GPIO_PPS (18) // Silk "A0"
+#define GPIO_PPM (17) // Silk "A1"
+#define GPIO_PPH (16) // Silk "A2"
+#define GPIO_PPX (15) // Silk "A3"
 #else
 #error Unknown board type
 #endif
+
+_Static_assert(GPIO_PPS < 32, "Pin must be on first port");
+_Static_assert(GPIO_PPM < 32, "Pin must be on first port");
+_Static_assert(GPIO_PPH < 32, "Pin must be on first port");
+_Static_assert(GPIO_PPX < 32, "Pin must be on first port");
 
 void app_main(void)
 {
     {
         gpio_config_t setting = {
-            .pin_bit_mask = (1ull << GPIO_PPS) | (1ull << NEOPIXEL_PWR),
+            .pin_bit_mask = (1ull << GPIO_PPS) | (1ull << GPIO_PPM) | (1ull << GPIO_PPH) | (1ull << NEOPIXEL_PWR),
             .mode = GPIO_MODE_OUTPUT,
         };
         gpio_config(&setting);
@@ -121,9 +132,38 @@ void app_main(void)
 
         const unsigned duty = US_IN_S/10;
         bool state = tv.tv_usec < duty;
-        gpio_set_level(GPIO_PPS, state);
 
         if (state) {
+            bool top_of_minute = tv.tv_sec % 60 == 0;
+            bool top_of_hour = tv.tv_sec % 3600 == 0;
+            bool ppx = !top_of_minute && !top_of_hour;
+            uint32_t to_set = (1u << GPIO_PPS);
+            uint32_t to_clear = 0;
+
+            if(top_of_minute) {
+                to_set |= (1u << GPIO_PPM);
+            } else {
+                to_clear |= (1u << GPIO_PPM);
+            }
+
+            if(top_of_hour) {
+                to_set |= (1u << GPIO_PPH);
+            } else {
+                to_clear |= (1u << GPIO_PPH);
+            }
+
+            if(ppx) {
+                to_set |= (1u << GPIO_PPX);
+            } else {
+                to_clear |= (1u << GPIO_PPX);
+            }
+
+
+            // set all pins at the same moment
+            GPIO.out_w1tc = to_clear;
+            GPIO.out_w1ts = to_set;
+
+            gpio_set_level(GPIO_PPS, state);
             if(last_set.tv_sec < tv.tv_sec && last_set.tv_sec > tv.tv_sec - 10) {
                 led_set(strip, CYAN);
             } else if(ever_set) {
@@ -132,6 +172,8 @@ void app_main(void)
                 led_set(strip, RED);
             }
         } else {
+            uint32_t to_clear = (1u << GPIO_PPS) | (1u << GPIO_PPM) | (1u << GPIO_PPH) | (1u << GPIO_PPX);
+            GPIO.out_w1ts = to_clear;
             led_set(strip, BLACK);
         }
 
