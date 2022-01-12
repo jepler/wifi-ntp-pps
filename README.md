@@ -2,6 +2,8 @@
 
 Produce a pps signal reasonably well synchronized to NTP.  The duty cycle is 100ms on (starting at the top of the second), 900ms off.  Jitter is very high relative to GPS or even WWVB, but long term accuracy should be extremely good thanks to NTP.
 
+(In practice, we measured the thing against a GPS-derived PPS signal for awhile, and saw the signal moving around +-20us compared to GPS, which is really pretty amazing.)
+
 # Installing and setting up esp-idf
 
 One time set-up:
@@ -47,7 +49,9 @@ Once flash has finished, click the reset button once.  (Technical limitations se
 
 # PPS Output
 
-The pin with silk "A0" gets a 1PPS output with the rising edge placed near the top of the second.
+The "A0" pin gets a 1PPS output with the rising edge placed near the top of the second.
+
+"A1" gets a pulse-per-minute, "A2" gets pulse-per-hour, and "A3" is "exclusive PPS": True once per second but only if it is not the hour or the minute, i.e., `A3 = A0 & ~(A1 | A2)`.
 
 # Status indicator
 
