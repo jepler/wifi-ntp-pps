@@ -34,18 +34,12 @@ Open the project configuration menu (`idf.py menuconfig`):
 # Compiling
 
 ```shell
-idf.py all
+make
 ```
 
 # Flashing
 
-Plug in the device while holding the BOOT button. Alternately hold BOOT and press RESET once. Determine where the device has appeared, such as `/dev/ttyACM1`.
-
-```shell
-idf.py flash --after no_reset --port=/dev/ttyACM???
-```
-
-Once flash has finished, click the reset button once.  (Technical limitations seem to prevent automatically resetting after loading the code, and it prints a scary failure message every time!)
+Plug in the device via USB and double-click the RESET button to enter the UF2 bootloader.  Copy (or drag & drop) `app.uf2` onto the boot drive.
 
 # Output pins
 
