@@ -60,5 +60,5 @@ The on-board neopixel gives the board status:
 * Black: power off or crashed
 * Solid red: never connected to wifi or crashed
 * Blinking red: never got NTP sync since power on
-* Blinking green: connected & got NTP sync in last 10s
+* Blinking cyan: connected & got NTP sync in last 10s (sync is nominally every 30s, free-running timer)
 * Blinking green: connected & got NTP sync since power on
