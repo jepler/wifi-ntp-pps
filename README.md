@@ -47,7 +47,7 @@ idf.py flash --after no_reset --port=/dev/ttyACM???
 
 Once flash has finished, click the reset button once.  (Technical limitations seem to prevent automatically resetting after loading the code, and it prints a scary failure message every time!)
 
-# PPS Output
+# Output pins
 
 The "A0" pin gets a 1PPS output with the rising edge placed near the top of the second.
 
